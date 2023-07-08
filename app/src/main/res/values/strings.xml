@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name" translatable="false">Medita</string>
+    <string name="tell_us">Tell us about you</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="enter_your_daily_target">Enter your daily target</string>
+    <string name="minutes">Minutes</string>
+    <string name="done">Done</string>
+    <string name="hello">Hello,</string>
+    <string name="min">min</string>
+    <string name="choose_music">Choose music</string>
+    <string name="choose_time">Choose time (min.)</string>
+    <string name="start">Start meditation</string>
+    <string name="min_today">Today</string>
+    <string name="to_daily">To daily target</string>
+    <string name="weekly_target">Your daily target</string>
+    <string name="average">Average</string>
+    <string name="average_last_week">Average last week</string>
+    <string name="daily_notifications">Daily notifications</string>
+    <string name="meditation">Meditate while timer is running</string>
+    <string name="stop">Stop</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="go_home">Go home</string>
+    <string name="name">Name</string>
+    <string name="meditation_over">Your meditation is over.</string>
+    <string name="congrats">Congratulations🎉</string>
+    <string name="you_reached">You have reached your daily target</string>
+    <string name="do_you_want">Do you want to stop?</string>
+    <string name="change_daily_target">Change daily target</string>
+    <string name="disable">Disable</string>
+    <string name="notification">Don`t forget about you meditation!</string>
+    <string name="notification_time">Time</string>
+    <string name="warning">Choose music and time for meditation</string>
+    <string name="keep_calm">Keep calm</string>
+    <string name="disable_notifications">Disable notifications</string>
+    <string name="close_eyes">Close your eyes</string>
+    <string name="name_cannot">Name cannot be empty</string>
+    <string name="target_cannot">Daily target cannot be empty</string>
+</resources>
