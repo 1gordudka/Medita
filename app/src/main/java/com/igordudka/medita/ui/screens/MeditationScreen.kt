@@ -53,9 +53,6 @@ import com.igordudka.medita.ui.theme.size23
 import com.igordudka.medita.ui.theme.size25
 import com.igordudka.medita.ui.theme.size42
 import com.igordudka.medita.ui.theme.size69
-import com.igordudka.medita.ui.viewmodels.MeditationViewModel
-import com.igordudka.medita.ui.viewmodels.ProfileViewModel
-import com.igordudka.medita.ui.viewmodels.allAudio
 import kotlinx.coroutines.delay
 
 val logoWidths = listOf(256.dp, 280.dp, 256.dp, 320.dp)
@@ -63,11 +60,9 @@ val logoHeights = listOf(171.dp, 195.dp, 171.dp, 215.dp)
 
 @Composable
 fun MeditationScreen(
-    goBack: () -> Unit,
     time: Int,
-    music: Int,
     changeTodayMinutes: () -> Unit,
-    stopMusic: () -> Unit
+    stopMeditation: () -> Unit
 ) {
 
     var currentColor by rememberSaveable {
@@ -128,7 +123,7 @@ fun MeditationScreen(
                         color = Color.White, fontSize = size23, fontFamily = interFamily)},
                 title = { /*TODO*/ },
                 confirmButton = { DefaultTextButton(text = stringResource(id = R.string.go_home)) {
-                    goBack()
+                    stopMeditation()
                 } }) {}
         }
         if (isStopDialogShown){
@@ -140,10 +135,7 @@ fun MeditationScreen(
                     fontSize = size25
                 )
             }, title = { }, confirmButton = { DefaultTextButton(text = stringResource(id = R.string.yes)) {
-                if (music != allAudio.size){
-                    stopMusic()
-                }
-                goBack()
+                stopMeditation()
                 isStopDialogShown = false
             }}) {
                 DefaultTextButton(text = stringResource(id = R.string.no)) {
@@ -164,9 +156,6 @@ fun MeditationScreen(
                 if (secondsCompleted % 60 == 0){
                     changeTodayMinutes()
                 }
-            }
-            if (music != allAudio.size){
-                stopMusic()
             }
         }
 
@@ -204,7 +193,7 @@ fun MeditationScreen(
                     .systemBarsPadding(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = stringResource(id = R.string.meditation),
+                Text(text = stringResource(id = R.string.meditation_text),
                     color = Color.White, fontFamily = interFamily, fontSize = size18,
                     textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
                 Box(modifier = Modifier.size(320.dp, 215.dp),

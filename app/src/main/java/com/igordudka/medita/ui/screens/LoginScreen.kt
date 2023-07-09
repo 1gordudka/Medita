@@ -55,6 +55,9 @@ fun LoginScreen(
     var isTargetFailure by rememberSaveable {
         mutableStateOf(false)
     }
+    var targetFailureType by rememberSaveable {
+        mutableStateOf(0)
+    }
 
 
     DefaultScreen {
@@ -73,12 +76,13 @@ fun LoginScreen(
             LoginText(text = stringResource(id = R.string.enter_your_name))
             DefaultTextField(text = name, onTextChanged = {name = it}, title = stringResource(id = R.string.name), isNameFailure,
             stringResource(id = R.string.name_cannot), {
-                Icon(imageVector = Icons.Filled.Face, contentDescription = null)
                 })
             LoginText(text = stringResource(id = R.string.enter_your_daily_target))
             DefaultNumTextField(text = dailyTarget, onTextChanged = {dailyTarget = it}, title = stringResource(id = R.string.minutes), isTargetFailure,
-            stringResource(id = R.string.target_cannot), {
-                Icon(imageVector = Icons.Filled.Info, contentDescription = null)
+            if (targetFailureType == 0) stringResource(id = R.string.target_cannot) else stringResource(
+                id = R.string.target_mustbe
+            ), {
+
                 })
         }
         DefaultTextButton(text = stringResource(id = R.string.done)) {
@@ -88,12 +92,17 @@ fun LoginScreen(
                 }
                 if (dailyTarget == ""){
                     isTargetFailure = true
+                    targetFailureType = 0
                 }
             }else{
                 changeName(name)
                 changeDailyTarget(dailyTarget.toInt())
                 launchApp()
                 goToMain()
+            }
+            if (dailyTarget.contains(".")){
+                isTargetFailure = true
+                targetFailureType = 1
             }
         }
     }

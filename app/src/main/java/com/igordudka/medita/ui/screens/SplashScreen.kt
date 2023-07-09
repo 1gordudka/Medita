@@ -43,7 +43,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(
     goNext: () -> Unit,
-    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     var isStarted by rememberSaveable {
         mutableStateOf(false)
@@ -68,11 +67,9 @@ fun SplashScreen(
 
     isStarted = true
 
-    loginViewModel.isFirst.collectAsState().value?.let {
-        LaunchedEffect(key1 = true){
-            delay(3000)
-            goNext()
-        }
+    LaunchedEffect(key1 = true){
+        delay(3000)
+        goNext()
     }
 
 
@@ -98,7 +95,7 @@ fun SplashScreen(
                    .height(splashHeight))
        }
         Text(
-            text = "Medita",
+            text = "medita",
             color = Color.White,
             fontFamily = interFamily,
             fontSize = size42,

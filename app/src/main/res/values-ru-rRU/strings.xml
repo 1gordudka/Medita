@@ -8,7 +8,7 @@
     <string name="done">Готово</string>
     <string name="hello">Привет,</string>
     <string name="min">мин</string>
-    <string name="choose_music">Выберите музыку</string>
+    <string name="sounds">Звуки</string>
     <string name="choose_time">Выберите время (мин.)</string>
     <string name="start">Начать медитацию</string>
     <string name="min_today">Сегодня</string>
@@ -17,7 +17,7 @@
     <string name="average">В среднем</string>
     <string name="average_last_week">В среднем на прошлой неделе</string>
     <string name="daily_notifications">Ежедневные уведомления</string>
-    <string name="meditation">Медитируйте, пока идет таймер</string>
+    <string name="meditation">Медитация</string>
     <string name="stop">Остановить</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
@@ -37,4 +37,10 @@
     <string name="close_eyes">Закройте глаза</string>
     <string name="name_cannot">Имя не может быть пустым</string>
     <string name="target_cannot">Двевная цель не может быть пустой</string>
+    <string name="target_mustbe">Дневная цель должна быть целым числом</string>
+    <string name="meditation_text">Медитируйте, пока идет таймер</string>
+    <string name="next">Далее</string>
+    <string name="time_choose">Выберите время для медитации</string>
+    <string name="music">Музыка</string>
+    <string name="Music">Музыка</string>
 </resources>

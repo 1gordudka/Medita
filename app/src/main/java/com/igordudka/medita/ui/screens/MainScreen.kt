@@ -5,9 +5,22 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,8 +41,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,20 +90,15 @@ import com.igordudka.medita.ui.theme.mainBack
 import com.igordudka.medita.ui.theme.size18
 import com.igordudka.medita.ui.theme.size23
 import com.igordudka.medita.ui.theme.size35
+import com.igordudka.medita.ui.theme.size42
 import com.igordudka.medita.ui.theme.size50
-import com.igordudka.medita.ui.viewmodels.LoginViewModel
-import com.igordudka.medita.ui.viewmodels.MeditationViewModel
-import com.igordudka.medita.ui.viewmodels.NotificationViewModel
-import com.igordudka.medita.ui.viewmodels.ProfileViewModel
-import com.igordudka.medita.ui.viewmodels.allAudio
-import com.igordudka.medita.utils.notifications.RemindersManager
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import java.time.Duration
-import java.util.concurrent.TimeUnit
+import com.igordudka.medita.ui.viewmodels.Meditation
+import com.igordudka.medita.ui.viewmodels.Music
+import com.igordudka.medita.ui.viewmodels.allMeditations
+import com.igordudka.medita.ui.viewmodels.allMusic
+import com.igordudka.medita.ui.viewmodels.allSounds
+import kotlinx.coroutines.delay
 
-val musicList = listOf(R.drawable.forest, R.drawable.fire, R.drawable.waterfall, R.drawable.rain, R.drawable.space,
-R.drawable.silence)
 val minutesList = listOf(5, 10, 15, 30, 45, 60)
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -90,22 +106,31 @@ val minutesList = listOf(5, 10, 15, 30, 45, 60)
 @Composable
 fun MainScreen(
     goToProfile: () -> Unit,
-    goToMeditation: () -> Unit,
     time: Int,
     music: Int,
+    sound: Int,
+    meditation: Int,
     isFirstTime: Boolean,
     doFirstTimeLaunch: () -> Unit,
     name: String,
     minutesToday: Int,
     dailyTarget: Int,
-    startMeditation: (Int, Int) -> Unit
+    changeSoundStatus: (Boolean) -> Unit,
+    changeMusicStatus: (Boolean) -> Unit,
+    changeMeditationStatus: (Boolean) -> Unit,
+    isSound: Boolean,
+    isMusic: Boolean,
+    isMeditation: Boolean,
+    startMeditation: () -> Unit,
+    chooseTime: (Int) -> Unit,
+    chooseSound: (Int) -> Unit,
+    chooseMeditation: (Int) -> Unit,
+    chooseMusic: (Int) -> Unit
 ) {
 
-    var chosenTime by rememberSaveable {
-        mutableStateOf(time)
-    }
-    var chosenMusic by rememberSaveable {
-        mutableStateOf(music)
+
+    var currentPart by rememberSaveable {
+        mutableStateOf(0)
     }
 
     val context = LocalContext.current
@@ -114,6 +139,7 @@ fun MainScreen(
     if (isFirstTime){
         doFirstTimeLaunch()
     }
+
 
     Column(
         Modifier
@@ -127,34 +153,98 @@ fun MainScreen(
                 )
             )
             .systemBarsPadding(),
-    verticalArrangement = Arrangement.SpaceBetween,
     horizontalAlignment = Alignment.CenterHorizontally) {
         MainTopBar(name = name) {
             goToProfile()
         }
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally){
-            item {
-                Row {
-                    StatsCard(amount = minutesToday, description = "" +
-                            stringResource(id = R.string.min_today), modifier = Modifier.weight(1f)) {}
-                    if (minutesToday < dailyTarget){
-                        StatsCard(amount = dailyTarget - minutesToday, description = stringResource(id = R.string.to_daily), modifier = Modifier.weight(1f)) {}
-                    }else{
-                        CongratsCard(modifier = Modifier.weight(1f))
-                    }
-                }
-                MusicBlock(chosenItem = chosenMusic, choose = { chosenMusic = it })
-                MinutesBlock(chosenItem = chosenTime, choose = { chosenTime = it })
+        Row {
+            StatsCard(amount = minutesToday, description = "" +
+                    stringResource(id = R.string.min_today), modifier = Modifier.weight(1f)) {}
+            if (minutesToday < dailyTarget){
+                StatsCard(amount = dailyTarget - minutesToday, description = stringResource(id = R.string.to_daily), modifier = Modifier.weight(1f)) {}
+            }else{
+                CongratsCard(modifier = Modifier.weight(1f))
             }
         }
-        DefaultTextButton(text = stringResource(id = R.string.start)) {
-            if (chosenMusic != -1 && chosenTime != -1){
-                startMeditation(chosenTime, chosenMusic)
-            }else{
-                Toast.makeText(context, context.getText(R.string.warning), Toast.LENGTH_SHORT).show()
+        AnimatedVisibility(visible = currentPart == 0,
+            enter = expandHorizontally(expandFrom = Alignment.End),
+            exit = ExitTransition.None
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                MinutesBlock(chosenItem = time, choose = { chooseTime(it) })
+                DefaultTextButton(text = stringResource(id = R.string.next)) {
+                    if (time != -1){
+                        currentPart++
+                    }else{
+                        Toast.makeText(context, context.getText(R.string.time_choose), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+        AnimatedVisibility(visible = currentPart == 1, enter = expandHorizontally(expandFrom = Alignment.End),
+            exit = ExitTransition.None
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                MeditationBlock(
+                    isMeditation = isMeditation,
+                    changeMeditation = { changeMeditationStatus(it) },
+                    chosenItem = meditation,
+                    choose = { chooseMeditation(it) },
+                    goBack = {currentPart--}
+                )
+                DefaultTextButton(text = stringResource(id = R.string.next)) {
+                    currentPart++
+                }
+            }
+        }
+        AnimatedVisibility(visible = currentPart == 2, enter = expandHorizontally(expandFrom = Alignment.End),
+        exit = ExitTransition.None) {
+            LazyColumn(
+                Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item{
+                    SoundBlock(chosenItem = sound, choose = { chooseSound(it) },
+                        changeSound = {changeSoundStatus(it)
+                                      changeMusicStatus(!it)}, isSound = isSound, goBack = {currentPart--})
+                    MusicBlock(
+                        isMusic = isMusic,
+                        changeMusic = { changeMusicStatus(it)
+                                      changeSoundStatus(!it)},
+                        chosenItem = music,
+                        choose = { chooseMusic(it) }
+                    )
+                    DefaultTextButton(text = stringResource(id = R.string.start)) {
+                        startMeditation()
+                    }
+                }
             }
         }
         Spacer(modifier = Modifier.weight(1f))
+        var isAlpha by remember {
+            mutableStateOf(false)
+        }
+        val meditaAlpha by animateFloatAsState(targetValue = if (isAlpha) 1f else 0f,
+        animationSpec = tween(3000)
+        )
+        LaunchedEffect(key1 = Unit){
+            while (true){
+                delay(3000)
+                isAlpha = !isAlpha
+            }
+        }
+        Text(text = "medita", color = Color.White.copy(alpha = 0.7f), fontSize = size23,
+        fontFamily = interFamily, modifier = Modifier
+                .padding(16.dp)
+                .alpha(meditaAlpha))
     }
 }
 
@@ -180,7 +270,7 @@ fun MainTopBar(
 }
 
 @Composable
-fun MusicCard(
+fun SoundCard(
     onClick: () -> Unit,
     pic: Int,
     isChosen: Boolean
@@ -206,15 +296,40 @@ fun MusicCard(
 }
 
 @Composable
-fun MusicBlock(chosenItem: Int, choose: (Int) -> Unit) {
+fun SoundBlock(isSound: Boolean, changeSound: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit,
+goBack: () -> Unit) {
 
-    Column {
-        Text(text = stringResource(id = R.string.choose_music), fontSize = size23, fontFamily = interFamily, color = Color.White,
-        modifier = Modifier.padding(12.dp))
-        LazyRow{
-            items(musicList){
-                MusicCard(onClick = { choose(musicList.indexOf(it)) }, pic = it, isChosen = chosenItem ==
-                musicList.indexOf(it))
+    Column(horizontalAlignment = Alignment.Start) {
+        Row(verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = goBack, Modifier.padding(start = 16.dp)) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+            Text(text = stringResource(id = R.string.sounds), fontSize = size23, fontFamily = interFamily, color = Color.White,
+                modifier = Modifier.padding(12.dp))
+            Switch(checked = isSound, onCheckedChange = { changeSound(it) },
+            colors = SwitchDefaults.colors(
+                uncheckedThumbColor = Color.White,
+                checkedThumbColor = Color.White,
+                uncheckedTrackColor = Color.Transparent,
+                checkedTrackColor = Color.Transparent,
+                uncheckedBorderColor = Color.White,
+                checkedBorderColor = Color.White
+            ))
+        }
+        AnimatedVisibility(visible = isSound, enter = fadeIn() + slideInVertically(),
+        exit = fadeOut() + slideOutVertically()
+        ) {
+            LazyRow{
+                items(allSounds){
+                    SoundCard(onClick = { choose(allSounds.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
+                            allSounds.indexOf(it))
+                }
             }
         }
     }
@@ -227,13 +342,13 @@ fun MinutesCard(
     isChosen: Boolean
 ) {
 
-    val width by animateDpAsState(targetValue = if (isChosen) 120.dp else 100.dp)
-    val height by animateDpAsState(targetValue = if (isChosen) 100.dp else 80.dp)
+    val width by animateDpAsState(targetValue = if (isChosen) 100.dp else 100.dp)
+    val height by animateDpAsState(targetValue = if (isChosen) 120.dp else 100.dp)
     val color by animateColorAsState(targetValue = if (isChosen) Color.White else Color.Gray)
 
     Box(contentAlignment = Alignment.Center, modifier = Modifier
-        .width(130.dp)
-        .height(110.dp)) {
+        .width(120.dp)
+        .height(140.dp)) {
         Row(
             Modifier
                 .clip(RoundedCornerShape(27.dp))
@@ -259,7 +374,7 @@ fun MinutesBlock(chosenItem: Int, choose: (Int) -> Unit) {
 
     Column {
         Text(text = stringResource(id = R.string.choose_time), fontSize = size23, fontFamily = interFamily, color = Color.White,
-            modifier = Modifier.padding(12.dp))
+            modifier = Modifier.padding(16.dp))
         LazyRow{
             items(minutesList){
                 MinutesCard(onClick = { choose(it) }, minutes = it, isChosen = it == chosenItem)
@@ -285,6 +400,79 @@ fun CongratsCard(
             Spacer(modifier = Modifier.height(7.dp))
             Text(text = stringResource(id = R.string.you_reached), color = Color.White, fontFamily = interFamily,
             fontSize = size18)
+        }
+    }
+}
+
+@Composable
+fun MeditationBlock(
+    isMeditation: Boolean, changeMeditation: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit,
+    goBack: () -> Unit
+) {
+
+    Column(horizontalAlignment = Alignment.Start) {
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = goBack, Modifier.padding(start = 16.dp)) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+            Text(text = stringResource(id = R.string.meditation), fontSize = size23, fontFamily = interFamily, color = Color.White,
+                modifier = Modifier.padding(12.dp))
+            Switch(checked = isMeditation, onCheckedChange = { changeMeditation(it) },
+                colors = SwitchDefaults.colors(
+                    uncheckedThumbColor = Color.White,
+                    checkedThumbColor = Color.White,
+                    uncheckedTrackColor = Color.Transparent,
+                    checkedTrackColor = Color.Transparent,
+                    uncheckedBorderColor = Color.White,
+                    checkedBorderColor = Color.White
+                ))
+        }
+        AnimatedVisibility(visible = isMeditation, enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically()
+        ) {
+            LazyRow{
+                items(allMeditations){
+                    SoundCard(onClick = { choose(allMeditations.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
+                            allMeditations.indexOf(it))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MusicBlock(isMusic: Boolean, changeMusic: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit) {
+
+    Column(horizontalAlignment = Alignment.Start) {
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
+            Text(text = stringResource(id = R.string.music), fontSize = size23, fontFamily = interFamily, color = Color.White,
+                modifier = Modifier.padding(16.dp))
+            Switch(checked = isMusic, onCheckedChange = { changeMusic(it) },
+                colors = SwitchDefaults.colors(
+                    uncheckedThumbColor = Color.White,
+                    checkedThumbColor = Color.White,
+                    uncheckedTrackColor = Color.Transparent,
+                    checkedTrackColor = Color.Transparent,
+                    uncheckedBorderColor = Color.White,
+                    checkedBorderColor = Color.White
+                ))
+        }
+        AnimatedVisibility(visible = isMusic, enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically()
+        ) {
+            LazyRow{
+                items(allMusic){
+                    SoundCard(onClick = { choose(allMusic.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
+                            allMusic.indexOf(it))
+                }
+            }
         }
     }
 }

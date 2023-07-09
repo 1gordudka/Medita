@@ -14,7 +14,7 @@ class WeeksWorker(ctx: Context, workerParameters: WorkerParameters) : CoroutineW
     override suspend fun doWork(): Result {
         val days = runBlocking { appPreferencesRepository.days.first() }
         val minutes = runBlocking { appPreferencesRepository.minutes.first() }
-        val lastWeekStats = if (days > 1){
+        val lastWeekStats = if (days > 0){
             minutes / days
         }else{
             minutes

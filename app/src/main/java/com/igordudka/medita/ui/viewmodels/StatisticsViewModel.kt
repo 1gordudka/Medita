@@ -39,7 +39,7 @@ class StatisticsViewModel @Inject constructor(private val appPreferencesReposito
         }
     }
     fun getThisWeekStatistics() : Int{
-        if (days.value!! > 1){
+        if (days.value!! > 0){
             return (minutes.value!! / days.value!!).toInt()
         }else{
             return minutes.value!!

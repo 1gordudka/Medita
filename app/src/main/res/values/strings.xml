@@ -7,7 +7,6 @@
     <string name="done">Done</string>
     <string name="hello">Hello,</string>
     <string name="min">min</string>
-    <string name="choose_music">Choose music</string>
     <string name="choose_time">Choose time (min.)</string>
     <string name="start">Start meditation</string>
     <string name="min_today">Today</string>
@@ -16,7 +15,7 @@
     <string name="average">Average</string>
     <string name="average_last_week">Average last week</string>
     <string name="daily_notifications">Daily notifications</string>
-    <string name="meditation">Meditate while timer is running</string>
+    <string name="meditation_text">Meditate while timer is running</string>
     <string name="stop">Stop</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -36,4 +35,10 @@
     <string name="close_eyes">Close your eyes</string>
     <string name="name_cannot">Name cannot be empty</string>
     <string name="target_cannot">Daily target cannot be empty</string>
+    <string name="target_mustbe">Daily target must be integer</string>
+    <string name="next">Next</string>
+    <string name="time_choose">Choose time for your meditation</string>
+    <string name="meditation">Meditation</string>
+    <string name="sounds">Sounds</string>
+    <string name="music">Music</string>
 </resources>

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.igordudka.medita.R
 import com.igordudka.medita.ui.theme.background
@@ -128,7 +130,7 @@ fun DefaultTextField(
                 Text(
                     text = supportingText,
                     fontFamily = interFamily,
-                    fontSize = size16,
+                    fontSize = size16
                 )
             }
         },
@@ -221,11 +223,13 @@ fun DefaultNumTextField(
         isError = isFailure,
         supportingText = {
             if (isFailure){
-                Text(
-                    text = supportingText,
-                    fontFamily = interFamily,
-                    fontSize = size16,
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text(
+                        text = supportingText,
+                        fontFamily = interFamily,
+                        fontSize = size16,
+                    )
+                }
             }
         },
         trailingIcon = trailingIcon

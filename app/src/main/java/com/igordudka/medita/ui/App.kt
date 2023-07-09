@@ -43,7 +43,6 @@ import com.igordudka.medita.ui.viewmodels.MeditationViewModel
 import com.igordudka.medita.ui.viewmodels.NotificationViewModel
 import com.igordudka.medita.ui.viewmodels.ProfileViewModel
 import com.igordudka.medita.ui.viewmodels.StatisticsViewModel
-import com.igordudka.medita.ui.viewmodels.allAudio
 import com.igordudka.medita.utils.notifications.RemindersManager
 import com.igordudka.medita.utils.workers.statistics.DaysWorker
 import com.igordudka.medita.utils.workers.statistics.WeeksWorker
@@ -124,7 +123,6 @@ fun App(
                                             ) {
                                                 MainScreen(
                                                     goToProfile = { currentScreen = profile },
-                                                    goToMeditation = { currentScreen = meditation },
                                                     time = meditationViewModel.time,
                                                     music = meditationViewModel.music,
                                                     isFirstTime = isFirst,
@@ -142,14 +140,22 @@ fun App(
                                                     name = name,
                                                     minutesToday = todayMinutes,
                                                     dailyTarget = dailyTarget,
-                                                    startMeditation = {it1, it2 ->
-                                                        meditationViewModel.time = it1
-                                                        meditationViewModel.music = it2
-                                                        if (it2 != allAudio.size){
-                                                            meditationViewModel.startMusic(context = context)
-                                                        }
+                                                    meditation = meditationViewModel.meditation,
+                                                    isMusic = meditationViewModel.isMusic,
+                                                    changeMusicStatus = {meditationViewModel.isMusic = it},
+                                                    changeMeditationStatus = {meditationViewModel.isMeditation = it},
+                                                    changeSoundStatus = {meditationViewModel.isSound = it },
+                                                    isSound = meditationViewModel.isSound,
+                                                    isMeditation = meditationViewModel.isMeditation,
+                                                    sound = meditationViewModel.sound,
+                                                    startMeditation = {
+                                                        meditationViewModel.startMeditation(context)
                                                         currentScreen = meditation
-                                                    }
+                                                    },
+                                                    chooseMeditation = {meditationViewModel.meditation = it},
+                                                    chooseMusic = {meditationViewModel.music = it},
+                                                    chooseSound = {meditationViewModel.sound = it },
+                                                    chooseTime = {meditationViewModel.time = it}
                                                 )
                                             }
                                             AnimatedVisibility(
@@ -158,16 +164,15 @@ fun App(
                                                 exit = ExitTransition.None
                                             ) {
                                                 MeditationScreen(
-                                                    goBack = { currentScreen = main },
                                                     time = meditationViewModel.time,
-                                                    music = meditationViewModel.music,
                                                     changeTodayMinutes = {
                                                         profileViewModel.changeTodayMinutes(
                                                             minutes + 1
                                                         )
                                                         statisticsViewModel.addMinutes(1)
                                                     }) {
-                                                    meditationViewModel.stopMusic()
+                                                    meditationViewModel.stopMeditation()
+                                                    currentScreen = main
                                                 }
                                             }
                                             AnimatedVisibility(
