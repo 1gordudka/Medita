@@ -86,23 +86,24 @@ fun LoginScreen(
                 })
         }
         DefaultTextButton(text = stringResource(id = R.string.done)) {
-            if (name == "" || dailyTarget == ""){
-                if (name == ""){
-                    isNameFailure = true
-                }
-                if (dailyTarget == ""){
-                    isTargetFailure = true
-                    targetFailureType = 0
-                }
-            }else{
-                changeName(name)
-                changeDailyTarget(dailyTarget.toInt())
-                launchApp()
-                goToMain()
-            }
             if (dailyTarget.contains(".")){
                 isTargetFailure = true
                 targetFailureType = 1
+            }else{
+                if (name == "" || dailyTarget == ""){
+                    if (name == ""){
+                        isNameFailure = true
+                    }
+                    if (dailyTarget == ""){
+                        isTargetFailure = true
+                        targetFailureType = 0
+                    }
+                }else{
+                    changeName(name)
+                    changeDailyTarget(dailyTarget.toInt())
+                    launchApp()
+                    goToMain()
+                }
             }
         }
     }
