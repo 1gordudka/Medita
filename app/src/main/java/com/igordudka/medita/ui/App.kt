@@ -44,9 +44,8 @@ import com.igordudka.medita.ui.viewmodels.NotificationViewModel
 import com.igordudka.medita.ui.viewmodels.ProfileViewModel
 import com.igordudka.medita.ui.viewmodels.StatisticsViewModel
 import com.igordudka.medita.utils.notifications.RemindersManager
-import com.igordudka.medita.utils.workers.statistics.DaysWorker
-import com.igordudka.medita.utils.workers.statistics.WeeksWorker
-import java.util.concurrent.TimeUnit
+import com.igordudka.medita.utils.statistics.DaysManager
+import com.igordudka.medita.utils.statistics.WeeksManager
 
 val splash = 0
 val login = 1
@@ -129,13 +128,8 @@ fun App(
                                                     doFirstTimeLaunch = {
                                                         notificationPermissionState.launchPermissionRequest()
                                                         RemindersManager(context).startReminder("$notificationTime:00")
-                                                        val dailyWorkRequest = PeriodicWorkRequestBuilder<DaysWorker>(1, TimeUnit.DAYS).build()
-                                                        val weeklyWorkRequest = PeriodicWorkRequestBuilder<WeeksWorker>(7, TimeUnit.DAYS).setInitialDelay(7, TimeUnit.DAYS)
-                                                            .build()
-                                                        WorkManager.getInstance(context).enqueueUniquePeriodicWork("daily_worker", ExistingPeriodicWorkPolicy.REPLACE,
-                                                        dailyWorkRequest)
-                                                        WorkManager.getInstance(context).enqueueUniquePeriodicWork("weekly_worker",
-                                                        ExistingPeriodicWorkPolicy.REPLACE, weeklyWorkRequest)
+                                                        DaysManager(context).startCounter()
+                                                        WeeksManager(context).startCounter()
                                                     },
                                                     name = name,
                                                     minutesToday = todayMinutes,
@@ -155,7 +149,18 @@ fun App(
                                                     chooseMeditation = {meditationViewModel.meditation = it},
                                                     chooseMusic = {meditationViewModel.music = it},
                                                     chooseSound = {meditationViewModel.sound = it },
-                                                    chooseTime = {meditationViewModel.time = it}
+                                                    chooseTime = {meditationViewModel.time = it},
+                                                    startPreview = {
+                                                        meditationViewModel.previewRaw = it
+                                                        meditationViewModel.startPreview(context)
+                                                        meditationViewModel.isPreviewPlaying = true
+                                                    },
+                                                    stopPreview = {
+                                                        meditationViewModel.stopPreview()
+                                                        meditationViewModel.isPreviewPlaying = false
+                                                    },
+                                                    isPlaying = meditationViewModel.isPreviewPlaying,
+                                                    previewRaw = meditationViewModel.previewRaw
                                                 )
                                             }
                                             AnimatedVisibility(

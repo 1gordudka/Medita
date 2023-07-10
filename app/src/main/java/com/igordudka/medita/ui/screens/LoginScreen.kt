@@ -86,7 +86,8 @@ fun LoginScreen(
                 })
         }
         DefaultTextButton(text = stringResource(id = R.string.done)) {
-            if (dailyTarget.contains(".")){
+            if (dailyTarget.contains(".") || dailyTarget.contains("-")
+                || dailyTarget.contains(" ") || dailyTarget.contains(",")){
                 isTargetFailure = true
                 targetFailureType = 1
             }else{

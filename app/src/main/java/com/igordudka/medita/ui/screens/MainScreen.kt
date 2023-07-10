@@ -94,6 +94,7 @@ import com.igordudka.medita.ui.theme.size42
 import com.igordudka.medita.ui.theme.size50
 import com.igordudka.medita.ui.viewmodels.Meditation
 import com.igordudka.medita.ui.viewmodels.Music
+import com.igordudka.medita.ui.viewmodels.ProfileViewModel
 import com.igordudka.medita.ui.viewmodels.allMeditations
 import com.igordudka.medita.ui.viewmodels.allMusic
 import com.igordudka.medita.ui.viewmodels.allSounds
@@ -125,7 +126,11 @@ fun MainScreen(
     chooseTime: (Int) -> Unit,
     chooseSound: (Int) -> Unit,
     chooseMeditation: (Int) -> Unit,
-    chooseMusic: (Int) -> Unit
+    chooseMusic: (Int) -> Unit,
+    startPreview: (Int) -> Unit,
+    stopPreview: () -> Unit,
+    previewRaw: Int,
+    isPlaying: Boolean
 ) {
 
 
@@ -159,7 +164,8 @@ fun MainScreen(
         }
         Row {
             StatsCard(amount = minutesToday, description = "" +
-                    stringResource(id = R.string.min_today), modifier = Modifier.weight(1f)) {}
+                    stringResource(id = R.string.min_today), modifier = Modifier.weight(1f)) {
+            }
             if (minutesToday < dailyTarget){
                 StatsCard(amount = dailyTarget - minutesToday, description = stringResource(id = R.string.to_daily), modifier = Modifier.weight(1f)) {}
             }else{
@@ -196,10 +202,20 @@ fun MainScreen(
                     isMeditation = isMeditation,
                     changeMeditation = { changeMeditationStatus(it) },
                     chosenItem = meditation,
-                    choose = { chooseMeditation(it) },
-                    goBack = {currentPart--}
+                    choose = {
+                    if (meditation == it && isPlaying){
+                        stopPreview()
+                    }else{
+                        chooseMeditation(it)
+                        startPreview(allMeditations[it].raw)
+                    }
+                    },
+                    goBack = {currentPart--},
+                    isPlaying = isPlaying,
+                    previewRaw = previewRaw
                 )
                 DefaultTextButton(text = stringResource(id = R.string.next)) {
+                    stopPreview()
                     currentPart++
                 }
             }
@@ -212,17 +228,35 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item{
-                    SoundBlock(chosenItem = sound, choose = { chooseSound(it) },
+                    SoundBlock(chosenItem = sound, choose = {
+                        if (sound == it && isPlaying){
+                            stopPreview()
+                        }else{
+                            chooseSound(it)
+                            startPreview(allSounds[it].raw)
+                        } },
                         changeSound = {changeSoundStatus(it)
-                                      changeMusicStatus(!it)}, isSound = isSound, goBack = {currentPart--})
+                                      changeMusicStatus(!it)}, isSound = isSound, goBack = {currentPart--},
+                    isPlaying = isPlaying, previewRaw = previewRaw)
                     MusicBlock(
                         isMusic = isMusic,
                         changeMusic = { changeMusicStatus(it)
                                       changeSoundStatus(!it)},
                         chosenItem = music,
-                        choose = { chooseMusic(it) }
+                        choose = {
+
+                            if (music == it && isPlaying){
+                                stopPreview()
+                            }else{
+                                chooseMusic(it)
+                                startPreview(allMusic[it].raw)
+                            }
+                        },
+                        isPlaying = isPlaying,
+                        previewRaw = previewRaw
                     )
                     DefaultTextButton(text = stringResource(id = R.string.start)) {
+                        stopPreview()
                         startMeditation()
                     }
                 }
@@ -273,11 +307,30 @@ fun MainTopBar(
 fun SoundCard(
     onClick: () -> Unit,
     pic: Int,
-    isChosen: Boolean
+    isChosen: Boolean,
+    isPlaying: Boolean
 ) {
 
-    val width by animateDpAsState(targetValue = if (isChosen) 150.dp else 120.dp)
-    val height by animateDpAsState(targetValue = if (isChosen) 150.dp else 120.dp)
+    val sizesList = listOf(150.dp, 130.dp)
+    var playingState by remember {
+        mutableStateOf(0)
+    }
+
+    if (isPlaying){
+        LaunchedEffect(key1 = Unit){
+            while (true){
+                delay(500)
+                playingState++
+            }
+        }
+    }
+
+    val width by animateDpAsState(targetValue = if (isChosen && !isPlaying) 150.dp else if(isPlaying
+        && isChosen) sizesList[playingState % 2]
+    else 120.dp)
+    val height by animateDpAsState(targetValue = if (isChosen && !isPlaying) 150.dp else if(isPlaying
+        && isChosen) sizesList[playingState % 2]
+    else 120.dp)
     val alpha by animateFloatAsState(targetValue = if (isChosen) 1f else 0.7f)
 
     Box(contentAlignment = Alignment.Center, modifier = Modifier
@@ -297,7 +350,7 @@ fun SoundCard(
 
 @Composable
 fun SoundBlock(isSound: Boolean, changeSound: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit,
-goBack: () -> Unit) {
+goBack: () -> Unit, isPlaying: Boolean, previewRaw: Int) {
 
     Column(horizontalAlignment = Alignment.Start) {
         Row(verticalAlignment = Alignment.CenterVertically,
@@ -328,7 +381,7 @@ goBack: () -> Unit) {
             LazyRow{
                 items(allSounds){
                     SoundCard(onClick = { choose(allSounds.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
-                            allSounds.indexOf(it))
+                            allSounds.indexOf(it), isPlaying = isPlaying && previewRaw == it.raw)
                 }
             }
         }
@@ -407,7 +460,7 @@ fun CongratsCard(
 @Composable
 fun MeditationBlock(
     isMeditation: Boolean, changeMeditation: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit,
-    goBack: () -> Unit
+    goBack: () -> Unit, previewRaw: Int, isPlaying: Boolean
 ) {
 
     Column(horizontalAlignment = Alignment.Start) {
@@ -439,7 +492,7 @@ fun MeditationBlock(
             LazyRow{
                 items(allMeditations){
                     SoundCard(onClick = { choose(allMeditations.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
-                            allMeditations.indexOf(it))
+                            allMeditations.indexOf(it), isPlaying = isPlaying && previewRaw == it.raw)
                 }
             }
         }
@@ -447,7 +500,8 @@ fun MeditationBlock(
 }
 
 @Composable
-fun MusicBlock(isMusic: Boolean, changeMusic: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit) {
+fun MusicBlock(isMusic: Boolean, changeMusic: (Boolean) -> Unit, chosenItem: Int, choose: (Int) -> Unit,
+isPlaying: Boolean, previewRaw: Int) {
 
     Column(horizontalAlignment = Alignment.Start) {
         Row(verticalAlignment = Alignment.CenterVertically,
@@ -470,7 +524,7 @@ fun MusicBlock(isMusic: Boolean, changeMusic: (Boolean) -> Unit, chosenItem: Int
             LazyRow{
                 items(allMusic){
                     SoundCard(onClick = { choose(allMusic.indexOf(it)) }, pic = it.pic, isChosen = chosenItem ==
-                            allMusic.indexOf(it))
+                            allMusic.indexOf(it), isPlaying = isPlaying && previewRaw == it.raw)
                 }
             }
         }

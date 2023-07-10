@@ -38,9 +38,13 @@ class MeditationViewModel : ViewModel() {
     var isSound by mutableStateOf(false)
     var isMusic by mutableStateOf(true)
 
+    var previewRaw by mutableStateOf(0)
+    var isPreviewPlaying by mutableStateOf(false)
+
     private lateinit var soundMediaPlayer: MediaPlayer
     private lateinit var meditationMediaPlayer: MediaPlayer
     private lateinit var musicMediaPlayer: MediaPlayer
+    private lateinit var previewPlayer: MediaPlayer
 
     fun startMeditation(context: Context){
         viewModelScope.launch {
@@ -102,6 +106,26 @@ class MeditationViewModel : ViewModel() {
     private fun stopMusic(){
         musicMediaPlayer.stop()
         musicMediaPlayer.release()
+    }
+
+    fun startPreview(
+        context: Context
+    ){
+        if (isPreviewPlaying == false){
+            previewPlayer = MediaPlayer.create(context, previewRaw)
+            previewPlayer.start()
+        }else{
+            previewPlayer.stop()
+            previewPlayer = MediaPlayer.create(context, previewRaw)
+            previewPlayer.start()
+        }
+    }
+
+    fun stopPreview(){
+        if (isPreviewPlaying){
+            previewPlayer.stop()
+            previewPlayer.release()
+        }
     }
 }
 
