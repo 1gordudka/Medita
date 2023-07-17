@@ -77,16 +77,24 @@ fun ProfileScreen(
         mutableStateOf("")
     }
     val context = LocalContext.current
+    var isTargetFailure by remember {
+        mutableStateOf(false)
+    }
 
     if (isDailyTargetChangeDialog){
         DefaultDialog(content = { DefaultNumTextField(text = newDailyTarget, onTextChanged = {newDailyTarget = it}, title = stringResource(
             id = R.string.minutes
-        ), isFailure = false, "", {}) }, title = {
+        ), isFailure = isTargetFailure, stringResource(id = R.string.target_mustbe), {}) }, title = {
                       Text(text = stringResource(id = R.string.change_daily_target), color = Color.White, fontSize = size23,
                       fontFamily = interFamily)
         }, confirmButton = { DefaultTextButton(text = stringResource(id = R.string.done)) {
-            changeDailyTarget(newDailyTarget.toInt())
-            isDailyTargetChangeDialog = false
+            if (newDailyTarget.contains(".") || newDailyTarget.contains("-")
+                || newDailyTarget.contains(" ") || newDailyTarget.contains(",")){
+                isTargetFailure = true
+            }else {
+                changeDailyTarget(newDailyTarget.toInt())
+                isDailyTargetChangeDialog = false
+            }
         } }) {
             DefaultTextButton(text = stringResource(id = R.string.disable)) {
                 isDailyTargetChangeDialog = false
